@@ -2,8 +2,8 @@
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "dataFactoryName": {
-            "type": "string"
+        "dataFactoryNames": {
+            "type": "array"
         },
         "workspaceName": {
             "type": "string"
@@ -15,7 +15,7 @@
     "resources": [
         {
             "type": "Microsoft.DataFactory/factories",
-            "name": "[parameters('dataFactoryName')]",
+            "name": "[parameters('dataFactoryNames')[copyIndex('dataFactoryCopy')]]",
             "apiVersion": "2018-06-01",
             "location": "[resourceGroup().location]",
             "identity": {
@@ -23,40 +23,46 @@
             },
             "properties": {
             },
-            "resources": [
-                {
-                    "type": "providers/diagnosticSettings",
-                    "name": "Microsoft.Insights/logs",
-                    "apiVersion": "2017-05-01-preview",
-                    "dependsOn": [
-                        "[parameters('dataFactoryName')]"
-                    ],
-                    "properties": {
-                        "workspaceId": "[resourceId(parameters('workspaceResourceGroupName'), 'Microsoft.OperationalInsights/workspaces', parameters('workspaceName'))]",
-                        "logAnalyticsDestinationType": "Dedicated",
-                        "logs": [
-                            {
-                                "category": "PipelineRuns",
-                                "enabled": true
-                            },
-                            {
-                                "category": "TriggerRuns",
-                                "enabled": true
-                            },
-                            {
-                                "category": "ActivityRuns",
-                                "enabled": true
-                            }
-                        ],
-                        "metrics": [
-                            {
-                                "category": "AllMetrics",
-                                "enabled": true
-                            }
-                        ]
+            "copy": {
+                "name": "dataFactoryCopy",
+                "count": "[length(parameters('dataFactoryNames'))]"
+            }
+        },
+        {
+            "type": "Microsoft.DataFactory/factories/providers/diagnosticSettings",
+            "name": "[concat(parameters('dataFactoryNames')[copyIndex('diagCopy')], '/Microsoft.Insights/logs')]",
+            "apiVersion": "2017-05-01-preview",
+            "dependsOn": [
+                "[resourceId('Microsoft.DataFactory/factories', parameters('dataFactoryNames')[copyIndex('diagCopy')])]"
+            ],
+            "properties": {
+                "workspaceId": "[resourceId(parameters('workspaceResourceGroupName'), 'Microsoft.OperationalInsights/workspaces', parameters('workspaceName'))]",
+                "logAnalyticsDestinationType": "Dedicated",
+                "logs": [
+                    {
+                        "category": "PipelineRuns",
+                        "enabled": true
+                    },
+                    {
+                        "category": "TriggerRuns",
+                        "enabled": true
+                    },
+                    {
+                        "category": "ActivityRuns",
+                        "enabled": true
                     }
-                }
-            ]
+                ],
+                "metrics": [
+                    {
+                        "category": "AllMetrics",
+                        "enabled": true
+                    }
+                ]
+            },
+            "copy": {
+                "name": "diagCopy",
+                "count": "[length(parameters('dataFactoryNames'))]"
+            }
         }
     ]
 }
