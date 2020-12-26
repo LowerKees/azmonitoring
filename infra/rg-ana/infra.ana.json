@@ -1,0 +1,62 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "dataFactoryName": {
+            "type": "string"
+        },
+        "workspaceName": {
+            "type": "string"
+        },
+        "workspaceResourceGroupName": {
+            "type": "string"
+        }
+    },
+    "resources": [
+        {
+            "type": "Microsoft.DataFactory/factories",
+            "name": "[parameters('dataFactoryName')]",
+            "apiVersion": "2018-06-01",
+            "location": "[resourceGroup().location]",
+            "identity": {
+                "type": "SystemAssigned"
+            },
+            "properties": {
+            },
+            "resources": [
+                {
+                    "type": "providers/diagnosticSettings",
+                    "name": "Microsoft.Insights/logs",
+                    "apiVersion": "2017-05-01-preview",
+                    "dependsOn": [
+                        "[parameters('dataFactoryName')]"
+                    ],
+                    "properties": {
+                        "workspaceId": "[resourceId(parameters('workspaceResourceGroupName'), 'Microsoft.OperationalInsights/workspaces', parameters('workspaceName'))]",
+                        "logAnalyticsDestinationType": "Dedicated",
+                        "logs": [
+                            {
+                                "category": "PipelineRuns",
+                                "enabled": true
+                            },
+                            {
+                                "category": "TriggerRuns",
+                                "enabled": true
+                            },
+                            {
+                                "category": "ActivityRuns",
+                                "enabled": true
+                            }
+                        ],
+                        "metrics": [
+                            {
+                                "category": "AllMetrics",
+                                "enabled": true
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    ]
+}

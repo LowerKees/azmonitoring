@@ -1,0 +1,116 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "0.1.0.0",
+    "parameters": {
+        "actionGroups": {
+            "type": "array"
+        },
+        "workspaceName": {
+            "type": "string"
+        },
+        "alertsLogAnalytics": {
+            "type": "array"
+        }
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Insights/actionGroups",
+            "name": "[parameters('actionGroups')[copyIndex()].actionGroupName]",
+            "apiVersion": "2019-03-01",
+            "location": "global",
+            "tags": {
+            },
+            "scale": null,
+            "properties": {
+                "groupShortName": "[parameters('actionGroups')[copyIndex()].actionGroupShortName]",
+                "enabled": true,
+                "emailReceivers": "[parameters('actionGroups')[copyIndex()].emailReceivers]",
+                "smsReceivers": [
+                ],
+                "webhookReceivers": [
+                ],
+                "itsmReceivers": [
+                ],
+                "azureAppPushReceivers": [
+                ],
+                "automationRunbookReceivers": [
+                ],
+                "voiceReceivers": [
+                ],
+                "logicAppReceivers": [
+                ],
+                "azureFunctionReceivers": [
+                ],
+                "armRoleReceivers": [
+                ]
+            },
+            "dependsOn": [
+            ],
+            "copy": {
+                "name": "actionGroupCopy",
+                "count": "[length(parameters('actionGroups'))]"
+            }
+        },
+        {
+            "type": "Microsoft.Insights/scheduledqueryrules",
+            "name": "[parameters('alertsLogAnalytics')[copyIndex('alertCopy')].alertName]",
+            "apiVersion": "2018-04-16",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "enabled": "true",
+                "source": {
+                    "query": "[parameters('alertsLogAnalytics')[copyIndex('alertCopy')].query]",
+                    "authorizedResources": [
+                    ],
+                    "dataSourceId": "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('workspaceName'))]",
+                    "queryType": "ResultCount"
+                },
+                "schedule": {
+                    "frequencyInMinutes": "[parameters('alertsLogAnalytics')[copyIndex('alertCopy')].frequencyInMinutes]",
+                    "timeWindowInMinutes": "[parameters('alertsLogAnalytics')[copyIndex('alertCopy')].timeWindowInMinutes]"
+                },
+                "action": {
+                    "severity": "[parameters('alertsLogAnalytics')[copyIndex('alertCopy')].severity]",
+                    "aznsAction": {
+                        "copy": [
+                            {
+                                "name": "actionGroup",
+                                "count": "[length(parameters('alertsLogAnalytics')[copyIndex('alertCopy')].actionGroups)]",
+                                "input": "[resourceId('Microsoft.Insights/actionGroups', parameters('alertsLogAnalytics')[copyIndex('alertCopy')].actionGroups[copyIndex('actionGroup')])]"
+                            }
+                        ],
+                        "emailSubject": "[parameters('alertsLogAnalytics')[copyIndex('alertCopy')].emailSubject]"
+                    },
+                    "trigger": {
+                        "thresholdOperator": "[parameters('alertsLogAnalytics')[copyIndex('alertCopy')].thresholdOperator]",
+                        "threshold": "[parameters('alertsLogAnalytics')[copyIndex('alertCopy')].threshold]"
+                    },
+                    "odata.type": "Microsoft.WindowsAzure.Management.Monitoring.Alerts.Models.Microsoft.AppInsights.Nexus.DataContracts.Resources.ScheduledQueryRules.AlertingAction"
+                }
+            },
+            "dependsOn": [
+                "[resourceId(resourceGroup().name, 'Microsoft.OperationalInsights/workspaces', parameters('workspaceName'))]",
+                "actionGroupCopy"
+            ],
+            "copy": {
+                "name": "alertCopy",
+                "count": "[length(parameters('alertsLogAnalytics'))]"
+            }
+        },
+        {
+            "type": "Microsoft.OperationalInsights/workspaces",
+            "name": "[parameters('workspaceName')]",
+            "apiVersion": "2020-03-01-preview",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "sku": {
+                    "name": "PerGB2018"
+                },
+                "features": {
+                    "enableLogAccessUsingOnlyResourcePermissions": true
+                },
+                "retentionInDays": 30
+            }
+        }
+    ]
+}
