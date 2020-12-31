@@ -1,0 +1,38 @@
+{
+    "name": "tr_daily",
+    "properties": {
+        "annotations": [],
+        "runtimeState": "Started",
+        "pipelines": [
+            {
+                "pipelineReference": {
+                    "referenceName": "PL_MOVE_DATA",
+                    "type": "PipelineReference"
+                }
+            },
+            {
+                "pipelineReference": {
+                    "referenceName": "PL_MOVE_DATA_B",
+                    "type": "PipelineReference"
+                }
+            }
+        ],
+        "type": "ScheduleTrigger",
+        "typeProperties": {
+            "recurrence": {
+                "frequency": "Day",
+                "interval": 1,
+                "startTime": "2020-12-31T14:10:00Z",
+                "timeZone": "UTC",
+                "schedule": {
+                    "minutes": [
+                        0
+                    ],
+                    "hours": [
+                        10
+                    ]
+                }
+            }
+        }
+    }
+}

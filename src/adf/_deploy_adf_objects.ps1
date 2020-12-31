@@ -50,3 +50,23 @@ New-AzDataFactoryV2Pipeline `
     -DefinitionFile $PSScriptRoot\pl_move_data_b.json `
     -Force `
     -ErrorAction Stop
+
+$Trigger = Get-AzDataFactoryV2Trigger `
+    -Name "TR_DAILY" `
+    -ResourceGroupName $RESOURCEGROUP `
+    -DataFactoryName $DATAFACTORYNAME `
+    -ErrorAction SilentlyContinue
+
+if ($Trigger) {
+    Stop-AzDataFactoryV2Trigger -InputObject $Trigger
+}
+
+$Trigger = New-AzDataFactoryV2Trigger `
+    -Name "TR_DAILY" `
+    -ResourceGroupName $RESOURCEGROUP `
+    -DataFactoryName $DATAFACTORYNAME `
+    -DefinitionFile $PSScriptRoot\tr_daily.json `
+    -Force `
+    -ErrorAction Stop
+
+Start-AzDataFactoryV2Trigger -InputObject $Trigger
