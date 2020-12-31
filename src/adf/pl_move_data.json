@@ -1,0 +1,68 @@
+{
+    "name": "PL_MOVE_DATA",
+    "properties": {
+        "activities": [
+            {
+                "name": "Copy data",
+                "type": "Copy",
+                "dependsOn": [],
+                "policy": {
+                    "timeout": "0.00:10:00",
+                    "retry": 3,
+                    "retryIntervalInSeconds": 30,
+                    "secureOutput": false,
+                    "secureInput": false
+                },
+                "userProperties": [
+                    {
+                        "name": "Source",
+                        "value": "@{'source-container'}//source-data.txt"
+                    },
+                    {
+                        "name": "Destination",
+                        "value": "@{'target-container'}//source-data.txt"
+                    }
+                ],
+                "typeProperties": {
+                    "source": {
+                        "type": "BinarySource",
+                        "storeSettings": {
+                            "type": "AzureBlobFSReadSettings",
+                            "recursive": false,
+                            "deleteFilesAfterCompletion": false
+                        },
+                        "formatSettings": {
+                            "type": "BinaryReadSettings"
+                        }
+                    },
+                    "sink": {
+                        "type": "BinarySink",
+                        "storeSettings": {
+                            "type": "AzureBlobFSWriteSettings"
+                        }
+                    },
+                    "enableStaging": false
+                },
+                "inputs": [
+                    {
+                        "referenceName": "DS_ADLS2_BIN",
+                        "type": "DatasetReference",
+                        "parameters": {
+                            "containerName": "container"
+                        }
+                    }
+                ],
+                "outputs": [
+                    {
+                        "referenceName": "DS_ADLS2_BIN",
+                        "type": "DatasetReference",
+                        "parameters": {
+                            "containerName": "container"
+                        }
+                    }
+                ]
+            }
+        ],
+        "annotations": []
+    }
+}

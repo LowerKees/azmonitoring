@@ -52,5 +52,19 @@ New-AzResourceGroupDeployment `
     -workspaceName $WORKSPACENAME `
     -workspaceResourceGroupName $ResourceGroups[0].name
 
+$StorageAccountKey = (Get-AzStorageAccountKey `
+        -ResourceGroupName "rg-atana-001" `
+        -Name "saanastore")[0].Value
+
+$Context = New-AzStorageContext `
+    -StorageAccountName "saanastore" `
+    -StorageAccountKey $StorageAccountKey
+
+Set-AzStorageBlobContent `
+    -File $PSScriptRoot\source-data.txt `
+    -Container "container" `
+    -Blob "source-data.txt" `
+    -Context $Context `
+    -Force
 
 

@@ -1,0 +1,26 @@
+{
+    "name": "DS_ADLS2_BIN",
+    "properties": {
+        "linkedServiceName": {
+            "referenceName": "LS_ADLS2_AT_B",
+            "type": "LinkedServiceReference"
+        },
+        "parameters": {
+            "containerName": {
+                "type": "string"
+            }
+        },
+        "annotations": [],
+        "type": "Binary",
+        "typeProperties": {
+            "location": {
+                "type": "AzureBlobFSLocation",
+                "fileName": "source-data.txt",
+                "fileSystem": {
+                    "value": "@dataset().containerName",
+                    "type": "Expression"
+                }
+            }
+        }
+    }
+}
