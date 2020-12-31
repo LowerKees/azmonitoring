@@ -5,6 +5,9 @@
         "dataFactoryNames": {
             "type": "array"
         },
+        "storageAccountName": {
+            "type": "string"
+        },
         "workspaceName": {
             "type": "string"
         },
@@ -13,6 +16,46 @@
         }
     },
     "resources": [
+        {
+            "type": "Microsoft.Storage/storageAccounts",
+            "name": "[parameters('storageAccountName')]",
+            "apiVersion": "2019-06-01",
+            "sku": {
+                "name": "Standard_LRS",
+                "tier": "Standard"
+            },
+            "kind": "StorageV2",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "isHnsEnabled": true,
+                "supportsHttpsTrafficOnly": true,
+                "minimumTlsVersion": "TLS1_2",
+                "allowBlobPublicAccess": false
+            },
+            "resources": [
+                {
+                    "type": "blobServices",
+                    "name": "default",
+                    "apiVersion": "2019-06-01",
+                    "dependsOn": [
+                        "[parameters('storageAccountName')]"
+                    ],
+                    "resources": [
+                        {
+                            "type": "containers",
+                            "name": "container",
+                            "apiVersion": "2019-06-01",
+                            "properties": {
+                                "publicAccess": "None"
+                            },
+                            "dependsOn": [
+                                "default"
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
         {
             "type": "Microsoft.DataFactory/factories",
             "name": "[parameters('dataFactoryNames')[copyIndex('dataFactoryCopy')]]",

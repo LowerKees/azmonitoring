@@ -3,7 +3,10 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "dataFactoryNames": {
-            "value": ["adf-example-dev", "adf-example-prod"]
+            "value": ["adf-at-ana-dev", "adf-at-ana-prod"]
+        },
+        "storageAccountName": {
+            "value": "saanastore"
         },
         "workspaceName": {
             "value": "OVERWRITTEN_IN_SCRIPT"
