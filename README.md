@@ -7,7 +7,7 @@ Two Azure resources groups. One for analytical resources and one for monitoring.
 Stores infra as code for two resource groups: 
 1. rg-ana
     - Used for analytical resources
-    - Deploys diagnostic settings as child resource of each analytics resource
+    - Deploys diagnostic settings for one out of two storage accounts and one out of two data factories.
 1. rg-mon
     - Used for monitoring resources
     - Monitoring resources include alerts, action groups and a workspace
