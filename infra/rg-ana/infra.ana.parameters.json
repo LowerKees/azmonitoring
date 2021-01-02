@@ -5,8 +5,8 @@
         "dataFactoryNames": {
             "value": ["adf-at-ana-dev", "adf-at-ana-prod"]
         },
-        "storageAccountName": {
-            "value": "saanastore"
+        "storageAccountNames": {
+            "value": ["saanastore", "saanastore2"]
         },
         "workspaceName": {
             "value": "OVERWRITTEN_IN_SCRIPT"

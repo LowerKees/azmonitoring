@@ -5,8 +5,8 @@
         "dataFactoryNames": {
             "type": "array"
         },
-        "storageAccountName": {
-            "type": "string"
+        "storageAccountNames": {
+            "type": "array"
         },
         "workspaceName": {
             "type": "string"
@@ -18,7 +18,7 @@
     "resources": [
         {
             "type": "Microsoft.Storage/storageAccounts",
-            "name": "[parameters('storageAccountName')]",
+            "name": "[parameters('storageAccountNames')[copyIndex('storageCopy')]]",
             "apiVersion": "2019-06-01",
             "sku": {
                 "name": "Standard_LRS",
@@ -32,29 +32,81 @@
                 "minimumTlsVersion": "TLS1_2",
                 "allowBlobPublicAccess": false
             },
-            "resources": [
-                {
-                    "type": "blobServices",
-                    "name": "default",
-                    "apiVersion": "2019-06-01",
-                    "dependsOn": [
-                        "[parameters('storageAccountName')]"
-                    ],
-                    "resources": [
-                        {
-                            "type": "containers",
-                            "name": "container",
-                            "apiVersion": "2019-06-01",
-                            "properties": {
-                                "publicAccess": "None"
-                            },
-                            "dependsOn": [
-                                "default"
-                            ]
-                        }
-                    ]
-                }
-            ]
+            "copy": {
+                "name": "storageCopy",
+                "count": "[length(parameters('storageAccountNames'))]"
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/blobServices",
+            "name": "[concat(parameters('storageAccountNames')[copyIndex('serviceCopy')], '/default')]",
+            "apiVersion": "2019-06-01",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountNames')[copyIndex('serviceCopy')])]"
+            ],
+            "copy": {
+                "name": "serviceCopy",
+                "count": "[length(parameters('storageAccountNames'))]"
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+            "name": "[concat(parameters('storageAccountNames')[copyIndex('containerCopy')], '/default/container')]",
+            "apiVersion": "2019-06-01",
+            "properties": {
+                "publicAccess": "None"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/blobServices', parameters('storageAccountNames')[copyIndex('containerCopy')], 'default')]"
+            ],
+            "copy": {
+                "name": "containerCopy",
+                "count": "[length(parameters('storageAccountNames'))]"
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/providers/diagnosticSettings",
+            "name": "[concat(parameters('storageAccountNames')[0], '/Microsoft.Insights/logs')]",
+            "apiVersion": "2017-05-01-preview",
+            "properties": {
+                "workspaceId": "[resourceId(parameters('workspaceResourceGroupName'), 'Microsoft.OperationalInsights/workspaces', parameters('workspaceName'))]",
+                "logAnalyticsDestinationType": "Dedicated",
+                "metrics": [
+                    {
+                        "category": "Transaction",
+                        "enabled": true
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/blobServices/providers/diagnosticSettings",
+            "name": "[concat(parameters('storageAccountNames')[0], '/default/Microsoft.Insights/logs')]",
+            "apiVersion": "2017-05-01-preview",
+            "properties": {
+                "workspaceId": "[resourceId(parameters('workspaceResourceGroupName'), 'Microsoft.OperationalInsights/workspaces', parameters('workspaceName'))]",
+                "logAnalyticsDestinationType": "Dedicated",
+                "logs": [
+                    {
+                        "category": "StorageRead",
+                        "enabled": true
+                    },
+                    {
+                        "category": "StorageWrite",
+                        "enabled": true
+                    },
+                    {
+                        "category": "StorageDelete",
+                        "enabled": true
+                    }
+                ],
+                "metrics": [
+                    {
+                        "category": "Transaction",
+                        "enabled": true
+                    }
+                ]
+            }
         },
         {
             "type": "Microsoft.DataFactory/factories",
@@ -73,10 +125,10 @@
         },
         {
             "type": "Microsoft.DataFactory/factories/providers/diagnosticSettings",
-            "name": "[concat(parameters('dataFactoryNames')[copyIndex('diagCopy')], '/Microsoft.Insights/logs')]",
+            "name": "[concat(parameters('dataFactoryNames')[0], '/Microsoft.Insights/logs')]",
             "apiVersion": "2017-05-01-preview",
             "dependsOn": [
-                "[resourceId('Microsoft.DataFactory/factories', parameters('dataFactoryNames')[copyIndex('diagCopy')])]"
+                "[resourceId('Microsoft.DataFactory/factories', parameters('dataFactoryNames')[0])]"
             ],
             "properties": {
                 "workspaceId": "[resourceId(parameters('workspaceResourceGroupName'), 'Microsoft.OperationalInsights/workspaces', parameters('workspaceName'))]",
@@ -101,10 +153,6 @@
                         "enabled": true
                     }
                 ]
-            },
-            "copy": {
-                "name": "diagCopy",
-                "count": "[length(parameters('dataFactoryNames'))]"
             }
         }
     ]

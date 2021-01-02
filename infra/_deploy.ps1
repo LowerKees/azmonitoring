@@ -44,7 +44,7 @@ New-AzResourceGroupDeployment `
 
 Write-Host "Deploying resources to resource group $($ResourceGroups[1].name)..."
 New-AzResourceGroupDeployment `
-    -Name "Depl_monitor_resources" `
+    -Name "Depl_analytics_resources" `
     -ResourceGroupName $ResourceGroups[1].name `
     -Mode Incremental `
     -TemplateParameterFile $ResourceGroups[1].templateParameterFilePath `
@@ -67,4 +67,24 @@ Set-AzStorageBlobContent `
     -Context $Context `
     -Force
 
+$StorageAccountResourceId = (Get-AzStorageAccount `
+    -ResourceGroupName "rg-atana-001" `
+    -Name "saanastore").id
+$DataFactoryIdentity = (Get-AzDataFactoryV2 `
+    -ResourceGroupName "rg-atana-001" `
+    -Name "adf-at-ana-dev").Identity.PrincipalId
+
+# Give ADF owner permission on the whole storage account
+$RBAC = "Storage Blob Data Contributor"
+$RoleAssignment = Get-AzRoleAssignment `
+    -ObjectId $DataFactoryIdentity `
+    -RoleDefinitionName $RBAC `
+    -Scope $StorageAccountResourceId
+
+if ($RoleAssignment.RoleDefinitionName -ne $RBAC ) {
+    New-AzRoleAssignment `
+        -ObjectId $DataFactoryIdentity 
+        -RoleDefinitionName $RBAC `
+        -Scope $StorageAccountResourceId
+}
 
