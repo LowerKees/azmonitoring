@@ -20,21 +20,7 @@
                     "emailSubject": "Data factory successful pipeline contains failing activity",
                     "thresholdOperator": "GreaterThan",
                     "threshold": 0
-                },
-                {
-                    "alertName": "alt_la_df_error_failed_pipeline",
-                    "description": "A pipeline has failed",
-                    "query": "ADFPipelineRun\n| where Status == 'Failed'",
-                    "frequencyInMinutes": 60,
-                    "timeWindowInMinutes": 60,
-                    "severity": 2,
-                    "actionGroups": [
-                        "ag-operator"
-                    ],
-                    "emailSubject": "Data factory pipeline has failed",
-                    "thresholdOperator": "GreaterThan",
-                    "threshold": 0
-                },
+                }
                 {
                     "alertName": "alt_la_df_latency_pipeline_latency_medium",
                     "description": "A pipeline runs between 25% and 50% slower than last run",
@@ -46,48 +32,6 @@
                         "ag-operator"
                     ],
                     "emailSubject": "Data factory pipeline runs between 25% and 50% slower",
-                    "thresholdOperator": "GreaterThan",
-                    "threshold": 0
-                },
-                {
-                    "alertName": "alt_la_df_latency_pipeline_latency_high",
-                    "description": "A pipeline runs over 50% slower than last run",
-                    "query": "ADFPipelineRun\n| where Status in ('Succeeded', 'Failed')\n| where OperationName contains 'Succeeded' or OperationName contains 'Failed'\n| project Duration = End - Start, PipelineName, TimeGenerated\n| order by PipelineName, TimeGenerated asc nulls last\n| | project DeltaDuration = Duration - prev(Duration), PrevPipelineName = prev(PipelineName), Duration, PipelineName, TimeGenerated\n| where DeltaDuration > (0.5 * Duration) and PipelineName == PrevPipelineName",
-                    "frequencyInMinutes": 60,
-                    "timeWindowInMinutes": 60,
-                    "severity": 2,
-                    "actionGroups": [
-                        "ag-operator"
-                    ],
-                    "emailSubject": "Data factory pipeline runs over 50% slower",
-                    "thresholdOperator": "GreaterThan",
-                    "threshold": 0
-                },
-                {
-                    "alertName": "alt_la_df_traffic_pipeline_runs_medium",
-                    "description": "The number of pipeline runs have increased over 10%",
-                    "query": "let twoDaysAgoCount = AzureMetrics\n| where ResourceProvider == 'MICROSOFT.DATAFACTORY'\n| where MetricName in ('PipelineFailedRuns','PipelineSucceededRuns')\n| where TimeGenerated between (startofday(now(-2d)) .. endofday(now(-2d)))\n| summarize numOfPipelineRunsTwoDays = count() by ResourceId;\nlet yesterdayCount = AzureMetrics\n| where ResourceProvider == 'MICROSOFT.DATAFACTORY'\n| where MetricName in ('PipelineFailedRuns','PipelineSucceededRuns')\n| where TimeGenerated between (startofday(now(-1d)) .. endofday(now(-1d)))\n| summarize numOfPipelineRunsYesterday = count() by ResourceId;\ntwoDaysAgoCount \n| join(yesterdayCount) on $left.ResourceId == $right.ResourceId\n| where numOfPipelineRunsYesterday > (numOfPipelineRunsTwoDays * 1.1)",
-                    "frequencyInMinutes": 1440,
-                    "timeWindowInMinutes": 1440,
-                    "severity": 3,
-                    "actionGroups": [
-                        "ag-operator"
-                    ],
-                    "emailSubject": "Data factory pipeline runs have increased over 10 percent",
-                    "thresholdOperator": "GreaterThan",
-                    "threshold": 0
-                },
-                {
-                    "alertName": "alt_la_df_error_failed_activity",
-                    "description": "An activity in a data factory pipeline has failed",
-                    "query": "ADFActivityRun | where Status == 'Failed'",
-                    "frequencyInMinutes": 5,
-                    "timeWindowInMinutes": 5,
-                    "severity": 3,
-                    "actionGroups": [
-                        "ag-operator"
-                    ],
-                    "emailSubject": "Data factory activity in a pipeline has failed",
                     "thresholdOperator": "GreaterThan",
                     "threshold": 0
                 }
