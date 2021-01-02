@@ -1,0 +1,3 @@
+StorageBlobLogs
+| where TimeGenerated > ago(3d) and StatusText contains "ServerBusy"
+| project TimeGenerated, OperationName, StatusCode, StatusText
