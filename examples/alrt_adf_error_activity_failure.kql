@@ -1,0 +1,7 @@
+let ActivityRuns = ADFActivityRun
+| where Status == 'Failed'
+| project ActivityName, ResourceId, PipelineRunId, ActivityStatus = Status;
+ADFPipelineRun
+| join(ActivityRuns) on $left.ResourceId == $right.ResourceId and $left.RunId == $right.PipelineRunId
+| where Status == 'Succeeded'
+| where ActivityStatus == 'Failed'

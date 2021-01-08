@@ -72,7 +72,7 @@ $StorageAccountResourceId = (Get-AzStorageAccount `
     -Name "saanastore").id
 $DataFactoryIdentity = (Get-AzDataFactoryV2 `
     -ResourceGroupName "rg-atana-001" `
-    -Name "adf-at-ana-dev").Identity.PrincipalId
+    -Name "adf-at-ana-prod").Identity.PrincipalId
 
 # Give ADF owner permission on the whole storage account
 $RBAC = "Storage Blob Data Contributor"

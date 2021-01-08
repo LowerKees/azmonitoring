@@ -1,0 +1,2 @@
+ADFPipelineRun
+| where Status == 'Failed'

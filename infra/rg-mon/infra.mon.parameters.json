@@ -20,7 +20,7 @@
                     "emailSubject": "Data factory successful pipeline contains failing activity",
                     "thresholdOperator": "GreaterThan",
                     "threshold": 0
-                }
+                },
                 {
                     "alertName": "alt_la_df_latency_pipeline_latency_medium",
                     "description": "A pipeline runs between 25% and 50% slower than last run",

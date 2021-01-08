@@ -1,0 +1,63 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "dataFactoryName": {
+            "type": "array",
+            "defaultValue": "adf-at-ana-prod"
+        },
+        "workspaceName": {
+            "type": "string",
+            "defaultValue": "law-mon-001"
+        },
+        "workspaceResourceGroupName": {
+            "type": "string",
+            "defaultValue": "rg-atmon-001"
+        }
+    },
+    "resources": [
+        {
+            "type": "Microsoft.DataFactory/factories",
+            "name": "[parameters('dataFactoryName')]",
+            "apiVersion": "2018-06-01",
+            "location": "[resourceGroup().location]",
+            "identity": {
+                "type": "SystemAssigned"
+            },
+            "resources": [
+                {
+                    "type": "/providers/diagnosticSettings",
+                    "name": "logs",
+                    "apiVersion": "2017-05-01-preview",
+                    "dependsOn": [
+                        "[parameters('dataFactoryName')]"
+                    ],
+                    "properties": {
+                        "workspaceId": "[resourceId(parameters('workspaceResourceGroupName'), 'Microsoft.OperationalInsights/workspaces', parameters('workspaceName'))]",
+                        "logAnalyticsDestinationType": "Dedicated",
+                        "logs": [
+                            {
+                                "category": "PipelineRuns",
+                                "enabled": true
+                            },
+                            {
+                                "category": "TriggerRuns",
+                                "enabled": true
+                            },
+                            {
+                                "category": "ActivityRuns",
+                                "enabled": true
+                            }
+                        ],
+                        "metrics": [
+                            {
+                                "category": "AllMetrics",
+                                "enabled": true
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    ]
+}
