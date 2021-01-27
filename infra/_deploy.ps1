@@ -83,7 +83,7 @@ $RoleAssignment = Get-AzRoleAssignment `
 
 if ($RoleAssignment.RoleDefinitionName -ne $RBAC ) {
     New-AzRoleAssignment `
-        -ObjectId $DataFactoryIdentity 
+        -ObjectId $DataFactoryIdentity `
         -RoleDefinitionName $RBAC `
         -Scope $StorageAccountResourceId
 }
